@@ -1,35 +1,40 @@
 import React, { Component } from 'react';
 
 import Header from '../header';
-import Row from '../row';
 import RandomPlanet from '../random-planet';
 import ErrorButton from '../error-button';
 import ErrorIndicator from "../error-indicator";
 import SwapiService from '../../services/swapi-service';
 import DummySwapiService from "../../services/dummy-swapi-service.js";
-import { SwapiServiceProvider } from '../swapi-service-context';
 import {
-  PersonDetails,
-  PlanetDetails,
-  StarshipDetails,
-  PersonList,
-  PlanetList,
-  StarshipList
-} from '../sw-components';
-
+  PeoplePage,
+  PlanetsPage,
+  StarshipsPage,
+  LoginPage,
+  SecretPage
+} from '../pages';
+import { SwapiServiceProvider } from '../swapi-service-context';
 import './app.css';
 import ErrorBoundry from '../error-boundry';
+
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { StarshipDetails } from '../sw-components';
 
 export default class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      showRandomPlanet: false,
+      showRandomPlanet: true,
       hasError: false,
-      swapiService: new SwapiService()
+      swapiService: new SwapiService(),
+      isLoggedIn: false
     };
   };
+
+  onLogin = () => {
+    this.setState({ isLoggedIn: true });
+  }
 
   toggleRandomPlanet = () => {
     this.setState((state) => {
@@ -54,6 +59,8 @@ export default class App extends Component {
   }
 
   render() {
+    const { isLoggedIn } = this.state;
+
     if(this.state.hasError) {
       return <ErrorIndicator />
     }
@@ -63,32 +70,49 @@ export default class App extends Component {
     return (
       <ErrorBoundry>
         <SwapiServiceProvider value={this.state.swapiService}>
-          <div className="stardb-app">
-            <Header onServiceChange={this.onServiceChange} />
-            {planet}
+          <Router>
+            <div className="stardb-app">
+              <Header onServiceChange={this.onServiceChange} />
+              {planet}
 
-            <div className="row md2 button-row">
-              <button
-                className="toggle-planet btn btn-warning btn-lg"
-                onClick={this.toggleRandomPlanet}>
-                Toggle Random Planet
-              </button>
-              <ErrorButton />
+              <div className="row md2 button-row">
+                <button
+                  className="toggle-planet btn btn-warning btn-lg"
+                  onClick={this.toggleRandomPlanet}>
+                  Toggle Random Planet
+                </button>
+                <ErrorButton />
+              </div>
+
+              <Route path="/" 
+                    render={() => <h2>Welcometo StarDB</h2>}
+                    exact />
+              <Route path="/people" 
+                    render={() => <h2>People</h2>}
+                    exact />
+              <Route path="/people/:id?" component={PeoplePage} />
+              <Route path="/planets" component={PlanetsPage} />
+              <Route path="/starships" component={StarshipsPage} exact />
+              <Route path="/starships/:id"
+                    render={({ match, location, history }) => {
+                      const { id } = match.params;
+                      return <StarshipDetails itemId={id} />
+                    }} />
+              <Route
+                path="/login"
+                render={() => (
+                  <LoginPage
+                    isLoggedIn={isLoggedIn}
+                    onLogin={this.onLogin} />
+                )} />
+              <Route
+                path="/secret"
+                render={() => (
+                  <SecretPage isLoggedIn={isLoggedIn} />
+                )} />
+              
             </div>
-
-            <Row 
-              left={<PersonList />}
-              right={<PersonDetails itemId={11} />}
-            />
-            <Row
-              left={<PlanetList />}
-              right={<PlanetDetails itemId={5} />}
-            />
-            <Row
-              left={<StarshipList />}
-              right={<StarshipDetails itemId={9} />}
-            />
-          </div>
+          </Router>
         </SwapiServiceProvider>
       </ErrorBoundry>
     )

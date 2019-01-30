@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import './row.css';
 
@@ -15,4 +16,20 @@ const Row = ({ left, right }) => {
     );
 };
 
+Row.propTypes = {
+    left: PropTypes.node,
+    right: PropTypes.node
+}
+
+// example
+
+//    MyComp.propTypes = {
+//        user: PropTypes.shape({
+//            name: PropTypes.string,
+//            role: PropTypes.oneOf(['user','admin'])
+//        })
+//    }
+
+
 export default Row;
+
